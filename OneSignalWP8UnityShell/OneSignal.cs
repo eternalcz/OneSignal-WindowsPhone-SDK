@@ -4,7 +4,7 @@ namespace OneSignalSDK {
 
     public class OneSignal {
 
-        public delegate void NotificationReceived(IDictionary<string, string> additionalData, bool isActive);
+        public delegate void NotificationReceived(string message, IDictionary<string, string> additionalData, bool isActive);
 
         public delegate void IdsAvailable(string playerID, string pushToken);
         public static IdsAvailable idsAvailableDelegate = null;

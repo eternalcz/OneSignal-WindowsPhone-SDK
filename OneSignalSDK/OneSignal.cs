@@ -19,7 +19,9 @@ using System.Threading;
 namespace OneSignalSDK {
 
     public class OneSignal {
-        
+
+        public const string VERSION = "010001";
+
         private const string BASE_URL = "https://onesignal.com/";
         private static string mAppId;
         private static string mPlayerId, mChannelUri;
@@ -28,7 +30,7 @@ namespace OneSignalSDK {
         private static bool initDone = false;
 
 
-        public delegate void NotificationReceived(IDictionary<string, string> additionalData, bool isActive);
+        public delegate void NotificationReceived(string message, IDictionary<string, string> additionalData, bool isActive);
         private static NotificationReceived notificationDelegate = null;
 
         public delegate void IdsAvailable(string playerID, string pushToken);
@@ -84,7 +86,7 @@ namespace OneSignalSDK {
                 var startingPage = ((PhoneApplicationFrame)Application.Current.RootVisual).Content as PhoneApplicationPage;
                 
                 if (startingPage.NavigationContext.QueryString.ContainsKey("GameThriveParams"))
-                    NotificationOpened(startingPage.NavigationContext.QueryString["GameThriveParams"]);
+                    NotificationOpened(null, startingPage.NavigationContext.QueryString["GameThriveParams"]);
 
                 SendPing(GetSavedActiveTime());
 
@@ -116,8 +118,8 @@ namespace OneSignalSDK {
 
         private static void SendPing(long activeTime) {
             // Can not updated active_time if we haven't registered yet.
-            // Also optimizing bandwidth by waiting until time is 10 secounds or more.
-            if (mPlayerId == null || activeTime < 10)
+            // Also optimizing bandwidth by waiting until time is 30 secounds or more.
+            if (mPlayerId == null || activeTime < 30)
                 return;
 
             JObject jsonObject = JObject.FromObject(new {
@@ -183,7 +185,8 @@ namespace OneSignalSDK {
                 device_os = Environment.OSVersion.Version.ToString(),
                 game_version = XDocument.Load("WMAppManifest.xml").Root.Element("App").Attribute("Version").Value,
                 language = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.ToString(),
-                timezone = TimeZoneInfo.Local.BaseUtcOffset.TotalSeconds.ToString()
+                timezone = TimeZoneInfo.Local.BaseUtcOffset.TotalSeconds.ToString(),
+                sdk = VERSION
             });
 
             var cli = GetWebClient();
@@ -213,15 +216,21 @@ namespace OneSignalSDK {
         }
 
         private static void pushChannel_ShellToastNotificationReceived(object sender, NotificationEventArgs e) {
-            if (e.Collection.ContainsKey("wp:Param"))
-                NotificationOpened(e.Collection["wp:Param"].Replace("?GameThriveParams=", ""));
+            if (e.Collection.ContainsKey("wp:Param")) {
+                string message;
+                if (e.Collection.ContainsKey("wp:Text2"))
+                    message = e.Collection["wp:Text2"];
+                else
+                    message = e.Collection["wp:Text1"];
+                NotificationOpened(message, e.Collection["wp:Param"].Replace("?GameThriveParams=", ""));
+            }
         }
 
         private static void PushChannel_ErrorOccurred(object sender, NotificationChannelErrorEventArgs e) {
             System.Diagnostics.Debug.WriteLine("ERROR CODE:" + e.ErrorCode + ": Could not register for push notifications do to " + e.Message);
         }
 
-        private static void NotificationOpened(string jsonParams) {
+        private static void NotificationOpened(string message, string jsonParams) {
             JObject jObject = JObject.Parse(jsonParams);
 
             JObject jsonObject = JObject.FromObject(new {
@@ -245,7 +254,20 @@ namespace OneSignalSDK {
                 if (additionalDataJToken != null)
                     additionalData = additionalDataJToken.ToObject<Dictionary<string, string>>();
 
-                notificationDelegate(additionalData, initDone);
+                // The OS does not pass the notificaiton text into the process when it is tapped on. (Only when in the app is running.)
+                if (jObject["custom"]["wpt2"] != null) {
+                    message = (string)jObject["custom"]["wpt2"];
+                    if (additionalData == null)
+                        additionalData = new Dictionary<string, string>();
+                    additionalData.Add(new KeyValuePair<string, string>("title", (string)jObject["custom"]["wpt1"]));
+                }
+                else if (jObject["custom"]["wpt1"] != null)
+                    message = (string)jObject["custom"]["wpt1"];
+
+                if (message == null)
+                    message = "";
+
+                notificationDelegate(message, additionalData, initDone);
             }
         }
 

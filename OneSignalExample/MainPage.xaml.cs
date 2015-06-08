@@ -33,9 +33,10 @@ namespace OneSignalExample {
         // Called when the user opens a notification or one comes in while using the app.
         // The name of the method can be anything as long as the signature matches.
         // Method must be static or be in a class where the same instance stays alive with the app.
-        private static void ReceivedNotification(IDictionary<string, string> additionalData, bool isActive) {
+        private static void ReceivedNotification(string message, IDictionary<string, string> additionalData, bool isActive) {
+            System.Diagnostics.Debug.WriteLine("message: " + message);
             if (additionalData != null)
-                System.Diagnostics.Debug.WriteLine("additionalData:\n" + string.Join(";", additionalData.Select(x => x.Key + "=" + x.Value).ToArray()));
+                System.Diagnostics.Debug.WriteLine("\nadditionalData:\n" + string.Join(";", additionalData.Select(x => x.Key + "=" + x.Value).ToArray()));
         }
     }
 }
