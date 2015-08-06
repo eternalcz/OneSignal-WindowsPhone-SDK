@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using OneSignalSDK;
+using OneSignalSDK_WP80;
 
 namespace GameThriveSDK
 {

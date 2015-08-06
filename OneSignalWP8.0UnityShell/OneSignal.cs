@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace OneSignalSDK {
+namespace OneSignalSDK_WP80 {
 
     public class OneSignal {
 

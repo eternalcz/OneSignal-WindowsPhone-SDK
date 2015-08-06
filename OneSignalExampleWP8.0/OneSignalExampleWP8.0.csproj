@@ -142,9 +142,9 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\OneSignalSDK\OneSignalSDK.csproj">
+    <ProjectReference Include="..\OneSignalSDK_WP8.0\OneSignalSDK_WP8.0.csproj">
       <Project>{9097bbf0-e6ef-4fb6-bf08-07e72a48c66f}</Project>
-      <Name>OneSignalSDK</Name>
+      <Name>OneSignalSDK_WP8.0</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\$(TargetFrameworkIdentifier)\$(TargetFrameworkVersion)\Microsoft.$(TargetFrameworkIdentifier).$(TargetFrameworkVersion).Overrides.targets" />

@@ -16,7 +16,7 @@ using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
 using System.Threading;
 
-namespace OneSignalSDK {
+namespace OneSignalSDK_WP80 {
 
     public class OneSignal {
 

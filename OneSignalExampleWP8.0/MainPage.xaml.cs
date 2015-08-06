@@ -5,7 +5,7 @@ using System.Windows;
 using System.Windows.Navigation;
 using System.Linq;
 
-using OneSignalSDK;
+using OneSignalSDK_WP80;
 
 namespace OneSignalExample {
     public partial class MainPage : PhoneApplicationPage {
