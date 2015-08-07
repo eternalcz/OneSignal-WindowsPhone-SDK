@@ -18,7 +18,6 @@ using System.Net.Http.Headers;
 using System.Text;
 using Windows.ApplicationModel;
 using System.Reflection;
-using UnityPlayer;
 using Windows.UI.Xaml;
 
 namespace OneSignalSDK_WP_WNS {
@@ -33,7 +32,6 @@ namespace OneSignalSDK_WP_WNS {
       private static long lastPingTime;
       private static ApplicationDataContainer settings = ApplicationData.Current.LocalSettings;
       private static bool initDone = false;
-      private static bool unityInitDone = false;
       private static bool foreground = true;
 
       public delegate void NotificationReceived(string message, IDictionary<string, string> additionalData, bool isActive);
@@ -49,12 +47,16 @@ namespace OneSignalSDK_WP_WNS {
 
       private static bool sessionCallInProgress, sessionCallDone;
 
+      private static ExternalInit externalInit = null;
+
       public static void Init(string appId, LaunchActivatedEventArgs launchArgs, NotificationReceived inNotificationDelegate = null) {
-         Init(appId, launchArgs.Arguments, inNotificationDelegate);
+         Init(appId, launchArgs.Arguments, inNotificationDelegate, null);
       }
 
-      private static void Init(string appId, string launchArgs, NotificationReceived inNotificationDelegate) {
+      internal static void Init(string appId, string launchArgs, NotificationReceived inNotificationDelegate, ExternalInit inExternalInit) {
          mAppId = appId;
+         externalInit = inExternalInit;
+
          if (inNotificationDelegate != null)
             notificationDelegate = inNotificationDelegate;
          mPlayerId = (string)settings.Values["OneSignalPlayerId"];
@@ -75,17 +77,6 @@ namespace OneSignalSDK_WP_WNS {
          GetPushUri();
 
          initDone = true;
-      }
-
-      public static void UnityInit(string appId, NotificationReceived inNotificationDelegate) {
-         if (unityInitDone)
-            return;
-
-         AppCallbacks.Instance.InvokeOnUIThread(() => {
-            Init(appId, AppCallbacks.Instance.GetAppArguments(), inNotificationDelegate);
-         }, false);
-
-         unityInitDone = true;
       }
 
       private static void OneSignal_VisibilityChanged_Window_Current(object sender, VisibilityChangedEventArgs args) {
@@ -112,8 +103,8 @@ namespace OneSignalSDK_WP_WNS {
             settings.Values["OneSignalActiveTime"] = (long)0;
          }
 
-         if (unityInitDone && foreground)
-            checkForNotificationOpened(AppCallbacks.Instance.GetAppArguments());
+         if (externalInit != null && foreground)
+            checkForNotificationOpened(externalInit.GetAppArguments());
       }
 
       private static void checkForNotificationOpened(string args) {

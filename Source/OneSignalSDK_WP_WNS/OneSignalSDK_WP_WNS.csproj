@@ -40,7 +40,9 @@
     <Content Include="Newtonsoft.Json.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ExternalInit.cs" />
     <Compile Include="OneSignal.cs" />
+    <Compile Include="ExternalInitUnity.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
