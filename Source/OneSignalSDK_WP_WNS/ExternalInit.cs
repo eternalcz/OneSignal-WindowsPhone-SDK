@@ -5,7 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace OneSignalSDK_WP_WNS {
-   internal interface ExternalInit {
+   public interface ExternalInit {
+      string sdkType { get; }
       string GetAppArguments();
    }
 }

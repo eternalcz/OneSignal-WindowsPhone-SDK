@@ -23,7 +23,6 @@ using Windows.UI.Xaml;
 namespace OneSignalSDK_WP_WNS {
 
    public class OneSignal {
-
       public const string VERSION = "010100";
 
       private const string BASE_URL = "https://onesignal.com/api/v1/";
@@ -53,23 +52,25 @@ namespace OneSignalSDK_WP_WNS {
          Init(appId, launchArgs.Arguments, inNotificationDelegate, null);
       }
 
-      internal static void Init(string appId, string launchArgs, NotificationReceived inNotificationDelegate, ExternalInit inExternalInit) {
+      public static void Init(string appId, string launchArgs, NotificationReceived inNotificationDelegate = null, ExternalInit inExternalInit = null) {     
          mAppId = appId;
          externalInit = inExternalInit;
 
          if (inNotificationDelegate != null)
             notificationDelegate = inNotificationDelegate;
+         
          mPlayerId = (string)settings.Values["OneSignalPlayerId"];
          mChannelUri = (string)settings.Values["OneSignalChannelUri"];
 
          checkForNotificationOpened(launchArgs);
-
+         
+         
          if (initDone)
             return;
 
          fallBackOneSignalSession = new Timer(o => { SendSession(null); }, null, 20000, Timeout.Infinite);
 
-         Window.Current.VisibilityChanged += OneSignal_VisibilityChanged_Window_Current;
+         Windows.UI.Core.CoreWindow.GetForCurrentThread().VisibilityChanged += OneSignal_VisibilityChanged_Window_Current;
 
          lastPingTime = DateTime.Now.Ticks;
 
@@ -226,6 +227,9 @@ namespace OneSignalSDK_WP_WNS {
          string urlString = "players";
          if (mPlayerId != null)
             urlString += "/" + mPlayerId + "/on_session";
+         else
+            jsonObject.Add(new JProperty("sdk_type", externalInit != null ? externalInit.sdkType : "native"));
+            
 
          var client = GetHttpClient();
          HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, urlString);
