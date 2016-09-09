@@ -20,7 +20,7 @@ namespace OneSignalSDK_WP80 {
 
     public class OneSignal {
 
-        public const string VERSION = "010001";
+        public const string VERSION = "010002";
 
         private const string BASE_URL = "https://onesignal.com/";
         private static string mAppId;
@@ -285,11 +285,19 @@ namespace OneSignalSDK_WP80 {
         }
 
         public static void SendTags(IDictionary<string, string> keyValues) {
-            SendTags((IDictionary<string, object>)keyValues);
+           var newDict = new Dictionary<string, object>();
+           foreach (var item in keyValues)
+              newDict.Add(item.Key, item.Value.ToString());
+
+           SendTags(newDict);
         }
 
         public static void SendTags(IDictionary<string, int> keyValues) {
-            SendTags((IDictionary<string, object>)keyValues);
+           var newDict = new Dictionary<string, object>();
+           foreach (var item in keyValues)
+              newDict.Add(item.Key, item.Value.ToString());
+
+           SendTags(newDict);
         }
 
         public static void SendTags(IDictionary<string, object> keyValues) {

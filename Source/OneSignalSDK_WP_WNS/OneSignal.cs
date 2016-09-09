@@ -23,7 +23,7 @@ using Windows.UI.Xaml;
 namespace OneSignalSDK_WP_WNS {
 
    public class OneSignal {
-      public const string VERSION = "010100";
+      public const string VERSION = "010101";
 
       private const string BASE_URL = "https://onesignal.com/api/v1/";
       private static string mAppId;
@@ -300,11 +300,19 @@ namespace OneSignalSDK_WP_WNS {
       }
 
       public static void SendTags(IDictionary<string, string> keyValues) {
-         SendTags((IDictionary<string, object>)keyValues);
+         var newDict = new Dictionary<string, object>();
+         foreach (var item in keyValues)
+            newDict.Add(item.Key, item.Value.ToString());
+
+         SendTags(newDict);
       }
 
       public static void SendTags(IDictionary<string, int> keyValues) {
-         SendTags((IDictionary<string, object>)keyValues);
+         var newDict = new Dictionary<string, object>();
+         foreach (var item in keyValues)
+            newDict.Add(item.Key, item.Value.ToString());
+
+         SendTags(newDict);
       }
 
       public static void SendTags(IDictionary<string, object> keyValues) {
