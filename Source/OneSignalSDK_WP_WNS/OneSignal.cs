@@ -18,6 +18,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using Windows.ApplicationModel;
 using System.Reflection;
+using System.Threading.Tasks;
 using Windows.UI.Xaml;
 
 namespace OneSignalSDK_WP_WNS {
@@ -44,7 +45,7 @@ namespace OneSignalSDK_WP_WNS {
 
       private static IDisposable fallBackOneSignalSession;
 
-      private static bool sessionCallInProgress, sessionCallDone;
+      private static bool sessionCallInProgress, sessionCallDone, subscriptionChangeInProgress;
 
       private static ExternalInit externalInit = null;
 
@@ -293,7 +294,32 @@ namespace OneSignalSDK_WP_WNS {
          return client;
       }
 
-      public static void SendTag(string key, string value) {
+
+    public static Task SetSubscriptionAsync(bool status) {
+        if (mPlayerId == null || mAppId == null || subscriptionChangeInProgress)
+        {
+            return Task.FromResult(0);
+        }
+
+        subscriptionChangeInProgress = true;
+
+        JObject jsonObject = JObject.FromObject(new
+        {
+            notification_types = status ? "1" : "-2",
+        });
+        string urlString = "players/" + mPlayerId;
+
+        var client = GetHttpClient();
+        HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Put, urlString);
+        request.Content = new StringContent(jsonObject.ToString(), Encoding.UTF8, "application/json");
+
+        return client.SendAsync(request).ContinueWith((responseTask) =>
+        {
+            subscriptionChangeInProgress = false;
+        });
+    }
+
+        public static void SendTag(string key, string value) {
          var dictionary = new Dictionary<string, object>();
          dictionary.Add(key, value);
          SendTags((IDictionary<string, object>)dictionary);

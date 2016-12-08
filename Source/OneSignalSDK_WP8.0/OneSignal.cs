@@ -10,11 +10,14 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO.IsolatedStorage;
 using System.Net;
+using System.Text;
 using System.Windows;
 using System.Xml.Linq;
 
 using Newtonsoft.Json.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using Windows.ApplicationModel;
 
 namespace OneSignalSDK_WP80 {
 
@@ -41,7 +44,7 @@ namespace OneSignalSDK_WP80 {
 
         private static IDisposable fallBackOneSignalSession;
 
-        private static bool sessionCallInProgress, sessionCallDone;
+        private static bool sessionCallInProgress, sessionCallDone, subscriptionChangeInProgress;
 
         public static void Init(string appId, NotificationReceived inNotificationDelegate = null) {
             if (initDone)
@@ -152,6 +155,28 @@ namespace OneSignalSDK_WP80 {
             }
 
             SendSession(currentChannelUri);
+        }
+
+        public static void SetSubscription(bool status)
+        {
+            if (mPlayerId == null || mAppId == null || subscriptionChangeInProgress)
+            {
+                return;
+            }
+
+            subscriptionChangeInProgress = true;
+
+            JObject jsonObject = JObject.FromObject(new
+            {
+                notification_types = status ? "1" : "-2"
+            });
+            
+            var webClient = GetWebClient();
+            webClient.UploadStringCompleted += (senderObj, eventArgs) => {
+                subscriptionChangeInProgress = false;
+            };
+            
+           webClient.UploadStringAsync(new Uri(BASE_URL + "api/v1/players/" + mPlayerId), "PUT", jsonObject.ToString());
         }
 
         private static void SendSession(string currentChannelUri) {
